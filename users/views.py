@@ -47,10 +47,6 @@ def login_user(request):
         return render(request, 'login.html')
 
 
-def check_if_the_user_name_is_exist(user_name: str):
-    return User.objects.filter(username=user_name).exists()
-
-
 def logout_user(request):
     logout(request)
     return redirect('login')
