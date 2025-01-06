@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
@@ -7,27 +8,27 @@ from accounts.models import Account
 from .form import TransactionForm
 from .models import Transaction
 
-
+@login_required
 def index(request):
     transactions = Transaction.objects.select_related('user', 'account', 'category').order_by('-id')
 
     return render(request, 'index.html', {'transactions': transactions})
 
-
+@login_required
 def income_transactions(request):
     transactions = (Transaction.objects.filter(type_of_transaction='income')
                     .select_related('user', 'account', 'category').order_by('-id'))
 
     return render(request, 'income-list.html', {'transactions': transactions})
 
-
+@login_required
 def expense_transactions(request: object) -> object:
     transactions = (Transaction.objects.filter(type_of_transaction='expense')
                     .select_related('user', 'account', 'category').all())
 
     return render(request, 'expense-list.html', {'transactions': transactions})
 
-
+@login_required
 @transaction.atomic
 def create(request) -> object:
     if request.method == 'POST':
@@ -45,7 +46,7 @@ def create(request) -> object:
     form = TransactionForm()
     return render(request, 'create.html', {'form': form})
 
-
+@login_required
 @transaction.atomic
 def update(request, transaction_id: int):
     transaction = get_object_or_404(Transaction, pk=transaction_id)
@@ -61,7 +62,7 @@ def update(request, transaction_id: int):
 
     return render(request, 'edit.html', {'form': form, 'transaction': transaction})
 
-
+@login_required
 @transaction.atomic
 def delete(request, transaction_id: int):
     transaction = get_object_or_404(Transaction, pk=transaction_id)
