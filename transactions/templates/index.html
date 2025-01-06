@@ -1,4 +1,46 @@
 {% extends "base.html" %}
 {% block content%}
-nice
+<div class="d-flex mb-3">
+
+    <div class="p-2"><h5 class="card-title">All Transactions</h5></div>
+    <div class="ms-auto p-2 mt-2"><a href="{% url 'create' %}" class="btn btn-primary">Add New Transaction</a></div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-success">{{message}}</div>
+{% endfor %}
+{% endif %}
+<table class="table datatable">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Account Name</th>
+        <th>Category</th>
+        <th>Type Of Transaction</th>
+        <th>Amount <KBD>USD</KBD></th>
+        <th>Entered By</th>
+        <th>Created At</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for transaction in transactions %}
+    <tr>
+        <td>{{transaction.id}}</td>
+        <td>{{transaction.account.name}}</td>
+        <td>{{transaction.category.name}}</td>
+        <td>{{transaction.type_of_transaction}}</td>
+        <td>{{transaction.Amount}} $</td>
+        <td>{{transaction.user.first_name}} {{transaction.user.last_name}}</td>
+        <td>{{transaction.created_at}}</td>
+        <td>
+            <a href="{% url 'update-transaction' transaction.id %}" class="btn btn-sm btn-success">Edit</a>
+            <a href="{% url 'delete-transaction' transaction.id %}" class="btn btn-sm btn-danger">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+
 {% endblock content%}

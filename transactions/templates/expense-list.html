@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content%}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Expense Transactions</h5>
+        <table class="table datatable">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Account Name</th>
+                <th>Category</th>
+                <th>Type Of Transaction</th>
+                <th>Amount <KBD>USD</KBD></th>
+                <th>Entered By</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for transaction in transactions %}
+            <tr>
+                <td>{{transaction.id}}</td>
+                <td>{{transaction.account.name}}</td>
+                <td>{{transaction.category.name}}</td>
+                <td>{{transaction.type_of_transaction}}</td>
+                <td>{{transaction.Amount}} $</td>
+                <td>{{transaction.user.first_name}}</td>
+                <td>{{transaction.created_at}}</td>
+                <td>
+                    <a href="{% url 'update-transaction' transaction.id %}" class="btn btn-sm btn-success">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock content%}

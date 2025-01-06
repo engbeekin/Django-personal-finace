@@ -1,5 +1,107 @@
-from django.shortcuts import render
+from django.db import transaction
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
+
+from accounts.models import Account
+from .form import TransactionForm
+from .models import Transaction
 
 
 def index(request):
-    return render(request, 'index.html')
+    transactions = Transaction.objects.select_related('user', 'account', 'category').order_by('-id')
+
+    return render(request, 'index.html', {'transactions': transactions})
+
+
+def income_transactions(request):
+    transactions = (Transaction.objects.filter(type_of_transaction='income')
+                    .select_related('user', 'account', 'category').order_by('-id'))
+
+    return render(request, 'income-list.html', {'transactions': transactions})
+
+
+def expense_transactions(request: object) -> object:
+    transactions = (Transaction.objects.filter(type_of_transaction='expense')
+                    .select_related('user', 'account', 'category').all())
+
+    return render(request, 'expense-list.html', {'transactions': transactions})
+
+
+@transaction.atomic
+def create(request) -> object:
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            try:
+                process_transaction(request, form)
+                messages.success(request, 'Transaction created successfully!')
+                return redirect('transactions')
+            except Exception as e:
+                print(f"Error: {e}")
+                return render(request, 'create.html',
+                              {'form': form, 'error': e})
+
+    form = TransactionForm()
+    return render(request, 'create.html', {'form': form})
+
+
+@transaction.atomic
+def update(request, transaction_id: int):
+    transaction = get_object_or_404(Transaction, pk=transaction_id)
+    form = TransactionForm(request.POST or None, instance=transaction)
+    if form.is_valid():
+        try:
+            process_transaction(request, form)
+            messages.success(request, 'Transaction Updated successfully!')
+            return redirect('transactions')
+        except Exception as e:
+            return render(request, 'edit.html',
+                          {'form': form, 'transaction': transaction, 'error': e})
+
+    return render(request, 'edit.html', {'form': form, 'transaction': transaction})
+
+
+@transaction.atomic
+def delete(request, transaction_id: int):
+    transaction = get_object_or_404(Transaction, pk=transaction_id)
+    transaction.delete()
+    update_account_balance_after_delete_transaction(transaction.account_id, transaction.Amount)
+    messages.success(request, 'Deleted Transaction successfully!')
+    return redirect('/')
+
+
+def process_transaction(request, form):
+    account_id = form.cleaned_data['account'].id
+    transaction_amount = form.cleaned_data['Amount']
+    transaction_type = form.cleaned_data['type_of_transaction']
+    account = Account.objects.get(pk=account_id)
+
+    # validate the transaction amount if exceed the account balance
+    check_if_account_balance_exceed(account.balance, transaction_amount, transaction_type)
+    transaction = form.save(commit=False)
+    transaction.user = request.user
+    transaction.save()
+
+    # update the account balance after transaction
+    update_account_balance(account, transaction_amount, transaction_type)
+
+
+def update_account_balance(account, transaction_amount, transaction_type):
+    if transaction_type == Transaction.TransactionType.INCOME:
+        account.balance += transaction_amount
+    elif transaction_type == Transaction.TransactionType.EXPENSE:
+        account.balance -= transaction_amount
+    account.save()
+
+
+def update_account_balance_after_delete_transaction(account_id: int, transaction_amount):
+    account = Account.objects.get(pk=account_id)
+    account.balance += transaction_amount
+    account.save()
+
+
+def check_if_account_balance_exceed(account_balance, transaction_amount, transaction_type):
+    if (transaction_type == Transaction.TransactionType.EXPENSE and
+            account_balance < transaction_amount):
+        raise ValueError(f'Transaction amount exceeds account balance , your balance is: {account_balance}$')
