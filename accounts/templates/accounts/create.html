@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content%}
+<form action="" method="POST">
+    {% csrf_token %}
+    <div class="mt-2 p-2">
+        <h2>Create New Account</h2>
+        <hr/>
+    </div>
+    <div class="mt-2 p-2">
+        {% if error %}
+        <div class="alert alert-warning"> {{error}}</div>
+        {% endif%}
+        <div class="row ">
+            <div class="col-md-6 mb-3">
+                <label for="id_origin_country" class="form-label uppercase">{{ form.name.label }}</label>
+                {{ form.name}}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="id_origin_country" class="form-label uppercase">{{ form.balance.label }}</label>
+                {{ form.balance}}
+            </div>
+        </div>
+    </div>
+    <div class="d-flex">
+        <button type="submit" class="btn btn-sm btn-primary offset-6">Submit</button>
+        <a href="{% url 'account-index' %}" class="btn btn-sm btn-danger ms-3">Cancel </a>
+    </div>
+</form>
+{% endblock content%}

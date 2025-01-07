@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content%}
+<div class="d-flex mb-3">
+
+    <div class="p-2"><h5 class="card-title">All Account</h5></div>
+    <div class="ms-auto p-2 mt-2"><a href="{% url 'create-account' %}" class="btn btn-primary">Add New Account</a></div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-success">{{message}}</div>
+{% endfor %}
+{% endif %}
+<table class="table datatable">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Account Name</th>
+        <th>Account Balance</th>
+        <th>Entered By</th>
+        <th>Created At</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for account in accounts %}
+    <tr>
+        <td>{{forloop.counter}}</td>
+        <td>{{account.name}}</td>
+        <td>{{account.balance}}$</td>
+        <td>{{account.user.first_name}} {{account.user.last_name}}</td>
+        <td>{{account.created_at}}</td>
+        <td>
+            <a href="{% url 'update-account' account.id %}" class="btn btn-sm btn-success">Edit</a>
+        </td>
+    </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+{% endblock content%}
