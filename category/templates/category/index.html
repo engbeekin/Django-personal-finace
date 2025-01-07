@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content%}
+<div class="d-flex mb-3">
+    <div class="p-2"><h5 class="card-title">All Categories</h5></div>
+    <div class="ms-auto p-2 mt-2"><a href="{% url 'create-category' %}" class="btn btn-primary">Add New Category</a></div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-success">{{message}}</div>
+{% endfor %}
+{% endif %}
+<table class="table datatable">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Category Name</th>
+        <th>Entered By</th>
+        <th>Created At</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for category in categories %}
+    <tr>
+        <td>{{forloop.counter}}</td>
+        <td>{{category.name}}</td>
+        <td>{{category.user.first_name}} {{category.user.last_name}}</td>
+        <td>{{category.created_at | date:'d/m/Y'}}</td>
+        <td>
+            <a href="{% url 'update-category' category.id %}" class="btn btn-sm btn-success">Edit</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock content%}
+
